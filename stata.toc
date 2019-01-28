@@ -1,0 +1,5 @@
+v 1.0
+d Materials by Robert Fletcher
+d rsfletch@stanford.edu
+
+p StataBin
