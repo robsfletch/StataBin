@@ -18,18 +18,19 @@ program define _gpbd
     }
 
 	syntax [if] [in] [, BY(varlist)]
-	tempvar touse x touse2
+	tempvar touse x touse2 bygroup
 
 	* quietly {
 		gen byte `touse' = 1 `if' `in'
 
-        levelsof `by'
-        local groups = r(levels)
+        egen `bygroup' = group(`by')
+        sum `bygroup'
+		local NumGroups = r(max)
 
         gen `x' = .
         gen `type' `Probability' = .
         gen `touse2' = 0
-        foreach group of local groups {
+        forvalues group = 1/`NumGroups' {
             replace `touse2' = 1 if `by' == `group' & `touse' == 1
             mkmat `Prob' if `touse2' == 1
             gpdcalc Prob
