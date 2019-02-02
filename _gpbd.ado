@@ -23,15 +23,20 @@ program define _gpbd
 	* quietly {
 		gen byte `touse' = 1 `if' `in'
 
-        egen `bygroup' = group(`by')
+        if "`by'" == "" {
+            gen `bygroup' = 1
+        }
+        else {
+            egen `bygroup' = group(`by')
+        }
         sum `bygroup'
-		local NumGroups = r(max)
+        local NumGroups = r(max)
 
         gen `x' = .
         gen `type' `Probability' = .
         gen `touse2' = 0
         forvalues group = 1/`NumGroups' {
-            replace `touse2' = 1 if `by' == `group' & `touse' == 1
+            replace `touse2' = 1 if `bygroup' == `group' & `touse' == 1
             mkmat `Prob' if `touse2' == 1
             gpdcalc Prob
             matrix TotalProbs = r(TotalProbs)
