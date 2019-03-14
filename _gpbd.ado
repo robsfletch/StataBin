@@ -18,41 +18,70 @@ program define _gpbd
     }
 
 	syntax [if] [in] [, BY(varlist)]
-	tempvar touse x touse2 bygroup
+	tempvar touse x touse2 bygroup bygrouptemp NumPresent TotalOutcome
 
-	* quietly {
-		gen byte `touse' = 1 `if' `in'
+    marksample touse
+    replace `touse' = 0 if `Outcome' == .
 
-        if "`by'" == "" {
-            gen `bygroup' = 1
+*******************************************************************************
+** Figure Out groupings
+*******************************************************************************
+    gen `type' `Probability' = .
+    if "`by'" == "" {
+        gen `bygroup' = 1 if `touse' == 1
+        egen `TotalOutcome' = total(`Outcome') if `touse' == 1
+    }
+    else {
+        egen `bygrouptemp' = group(`by') if `touse' == 1
+        by `by' : egen `TotalOutcome' = total(`Outcome') if `touse' == 1
+
+        bys `bygrouptemp' : gen `NumPresent' = _N if `touse' == 1
+
+        replace `Probability' = `Prob' if `NumPresent' == 1
+        replace `bygrouptemp' = 0 if `NumPresent' == 1
+
+        tempvar ProbabilityTemp1 ProbabilityTemp2 NegProb
+        gen `NegProb' = 1 - `Prob'
+        bys `bygrouptemp' : egen `ProbabilityTemp1' = prod(`Prob') , pmiss(ignore)
+        bys `bygrouptemp' : egen `ProbabilityTemp2' = prod(`NegProb') , pmiss(ignore)
+
+        replace `Probability' = `ProbabilityTemp1' ///
+            if `NumPresent' == 2 & `TotalOutcome' == 2
+        replace `Probability' = `ProbabilityTemp2' ///
+            if `NumPresent' == 2 & `TotalOutcome' == 0
+        replace `Probability' = 1 - `ProbabilityTemp1' - `ProbabilityTemp2' ///
+            if `NumPresent' == 2 & `TotalOutcome' == 1
+        drop `ProbabilityTemp1' `ProbabilityTemp2' `NegProb'
+
+        replace `bygrouptemp' = 0 if `NumPresent' == 2
+
+        egen `bygroup' = group(`bygrouptemp') if `bygrouptemp' != 0
+    }
+
+    sum `bygroup'
+    local NumObs = r(N)
+    local NumGroups = r(max)
+
+    if `NumObs' != 0 {
+        qui {
+            gen `x' = .
+            gen `touse2' = 0
+            forvalues group = 1/`NumGroups' {
+                replace `touse2' = 1 if `bygroup' == `group' & `touse' == 1
+                mkmat `Prob' if `touse2' == 1, matrix(ProbMat)
+                gpdcalc ProbMat
+                matrix TotalProbs = r(TotalProbs)
+                replace `x' = .
+                replace `x' = `TotalOutcome' if `touse2' == 1
+                gsort - `touse2'
+                local LocalTotalOutcome = `x'[1]
+                local P = TotalProbs[`LocalTotalOutcome' + 1, 2]
+                replace `Probability' = `P' if `touse2'
+                replace `touse2' = 0
+            }
         }
-        else {
-            egen `bygroup' = group(`by')
-        }
-        sum `bygroup'
-        local NumGroups = r(max)
+    }
 
-        gen `x' = .
-        gen `type' `Probability' = .
-        gen `touse2' = 0
-        forvalues group = 1/`NumGroups' {
-            replace `touse2' = 1 if `bygroup' == `group' & `touse' == 1
-            mkmat `Prob' if `touse2' == 1
-            gpdcalc Prob
-            matrix TotalProbs = r(TotalProbs)
-            tempvar xtemp
-            egen `xtemp' = total(`Outcome') if `touse2' == 1
-            replace `x' = `xtemp' if `touse2' == 1
-            drop `xtemp'
-            gsort - `touse2'
-            local TotalOutcome = `x'[1]
-            local P = TotalProbs[`TotalOutcome' + 1, 2]
-
-            replace `Probability' = `P' if `touse2'
-            replace `touse2' = 0
-        }
-
-	* }
 end
 
 
@@ -103,7 +132,6 @@ program gpdcalc , rclass
         matrix TotalProbs[`row', 2] = `sum' / `NumTreat'
     }
 
-    matrix list TotalProbs
     return matrix TotalProbs = TotalProbs
 
 end
