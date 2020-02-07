@@ -1,3 +1,10 @@
+*******************************************************************************
+** OVERVIEW
+**
+** Same thing as ds but allows you to use regular expressions
+**
+*******************************************************************************
+
 program dr, rclass
 	version 13
 	syntax [anything] , [FULL] *
