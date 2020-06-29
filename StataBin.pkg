@@ -1,13 +1,20 @@
 v 1.0
 d 'STATABIN': StataBin
-d 
+d
 d Distribution-Date:   20190127
 d License: GNU General Public License v3.0
-d 
-F mdesc2.ado
-F findbase.ado
-F clc.ado
-F erasedir.ado
-F normalized_diff.ado
-F dr.ado
+d
 F _gpbd.ado
+F clc.ado
+F DHS.ado
+F DHS.sthlp
+F DHSLabel.ado
+F dr.ado
+F erasedir.ado
+F evenbin.ado
+F findbase.ado
+F LogLabel.ado
+F LogLabel.sthlp
+F matcrename.ado
+F mdesc2.ado
+F split_local.ado
