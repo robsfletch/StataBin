@@ -7,7 +7,7 @@ program findbase, rclass
     local rel_path =  substr("`path'", strpos("`path'", "`basename'"), .)
 
 	** Determine the OS and the slash character used for paths
-    local os = "`c(os)'"
+  local os = "`c(os)'"
 	if "`os'" == "Windows" {
 		local char = "\"
 	}

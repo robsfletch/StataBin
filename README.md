@@ -47,3 +47,13 @@ include `base'/Code/Stata/file_header.do
 ``` Stata
 github uninstall StataBin
 ```
+
+## Things to look into for updating code
+- atts
+- stepwise
+- Stata lasso
+- Statsby
+- prefix
+- _prefix
+- _on_colon_parse
+- estimates table
