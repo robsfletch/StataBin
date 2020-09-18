@@ -1,6 +1,6 @@
 program DHSLabel, rclass
 version 10
-    syntax , [numbers(numlist) ONE]
+    syntax , local(string) [numbers(numlist) ONE]
 
     if "`numbers'" == "" {
       local numbers = "-100 -50 -20 0 20 50 100 200 500"
@@ -18,6 +18,7 @@ version 10
       local lab =`"`lab' `g' "`p'%" "'
     }
 
+    c_local `local' `"`lab'"'
     return local label = `"`lab'"'
 
 end
