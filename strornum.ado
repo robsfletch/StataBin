@@ -1,4 +1,4 @@
-program vartype, rclass
+program strornum, rclass
   version 16
   syntax varname
 
