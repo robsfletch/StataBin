@@ -2,10 +2,7 @@ program vartype, rclass
   version 16
   syntax varname
 
-  tab `varname'
-  d `varname'
-
-  capture confirm numeric variable `varname'
+  capture confirm numeric variable `varlist'
   if !_rc {
     local type = "numeric"
   }
